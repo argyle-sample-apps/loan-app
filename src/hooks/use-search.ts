@@ -1,13 +1,14 @@
-import useSWR from 'swr'
-import { fetcher } from 'api'
+import axios from 'axios'
+import { useQuery } from '@tanstack/react-query'
 
-export function useSearch(q: string) {
+const searchByQuery = async (q: string) => {
   const encoded = encodeURIComponent(q)
-  const { data, error } = useSWR(`/api/search?q=${encoded}`, fetcher)
+  const { data } = await axios.get(`/api/search?q=${encoded}`)
 
-  return {
-    results: data?.slice(0, 10),
-    isLoading: !error && !data,
-    error: error,
-  }
+  // return no more than 10 results
+  return data.slice(0, 10)
+}
+
+export function useSearch(q) {
+  return useQuery(['profile', q], () => searchByQuery(q))
 }

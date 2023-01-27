@@ -8,6 +8,8 @@ export default function EighthPage() {
   const router = useRouter()
 
   useEffect(() => {
+    router.prefetch('/bank/failed')
+
     const timer = setTimeout(() => {
       router.push('/bank/failed')
     }, 4000)

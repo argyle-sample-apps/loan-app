@@ -49,6 +49,7 @@ module.exports = {
           light: '#FEE4AE',
         },
         orange: {
+          light: '#FFEFD0',
           pastel: '#FED88A',
           DEFAULT: '#FFA437',
         },

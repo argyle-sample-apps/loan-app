@@ -4,24 +4,21 @@
 
 @font-face {
   font-family: 'CircularXX';
-  src: url(https://res.cloudinary.com/argyle-media/raw/upload/v1638889204/fonts/CircularXXWeb-Light.woff2)
-    format('woff2');
+  src: url(/loan-app/fonts/CircularXXWebLight.woff2) format('woff2');
   font-weight: 300;
   font-style: normal;
   font-display: optional;
 }
 @font-face {
   font-family: 'CircularXX';
-  src: url(https://res.cloudinary.com/argyle-media/raw/upload/v1612979711/fonts/CircularXXWeb-Regular.woff2)
-    format('woff2');
+  src: url(/loan-app/fonts/CircularXXWebRegular.woff2) format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: optional;
 }
 @font-face {
   font-family: 'CircularXX';
-  src: url(https://res.cloudinary.com/argyle-media/raw/upload/v1612979770/fonts/CircularXXWeb-Medium.woff)
-    format('woff2');
+  src: url(/loan-app/fonts/CircularXXWebMedium.woff2) format('woff2');
   font-weight: 500;
   font-style: normal;
   font-display: optional;
@@ -192,4 +189,17 @@ input[type='tel']:focus {
 
 .PhoneInputCountrySelectArrow {
   display: none;
+}
+
+/* Hide arrows on number fields */
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type='number'] {
+  -moz-appearance: textfield;
 }

@@ -8,6 +8,8 @@ export default function FifthPage() {
   const router = useRouter()
 
   useEffect(() => {
+    router.prefetch('/credit/success')
+
     const timer = setTimeout(() => {
       router.push('/credit/success')
     }, 3000)

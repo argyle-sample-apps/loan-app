@@ -1,12 +1,11 @@
+import Link from 'next/link'
 import { ReactElement } from 'react'
-import { useRouter } from 'next/router'
-import { Button } from 'components/buttons'
+import { Button } from 'components/button'
 import { AccountBalanceIcon } from 'components/icons'
 import { Heading, Paragraph } from 'components/typography'
 import WithBackButton from 'layouts/with-back-button'
 
 export default function SeventhPage() {
-  const router = useRouter()
   return (
     <div className="flex h-full flex-col ">
       <div className="mt-auto px-20">
@@ -19,9 +18,11 @@ export default function SeventhPage() {
           information.
         </Paragraph>
         <div className="mt-auto">
-          <Button green onClick={() => router.push('/bank/connecting')}>
-            Continue
-          </Button>
+          <Link href="/bank/connecting" passHref>
+            <Button as="a" green>
+              Continue
+            </Button>
+          </Link>
         </div>
       </div>
     </div>

@@ -4,11 +4,11 @@ import { Modal } from 'components/modal'
 import clsx from 'clsx'
 import { CloseIcon, UnlockIcon } from 'components/icons'
 
-export function SamplePasswordButton({
+export const SamplePasswordButton = ({
   showHintsButton,
   showHints,
   onClick,
-}: any) {
+}: any) => {
   if (!showHintsButton) {
     return null
   }
@@ -80,23 +80,28 @@ const credentials = [
 ]
 
 type CardPinModalProps = {
-  isOpen: boolean
+  showHints: boolean
+  setShowHints: (arg0: boolean) => void
 }
 
-export function CredentialsHints({ isOpen }: CardPinModalProps) {
+export const CredentialsHints = ({
+  showHints,
+  setShowHints,
+}: CardPinModalProps) => {
   const [copySuccessMessage, setCopySuccessMessage] = useState('')
 
   useEffect(() => {
     if (copySuccessMessage !== '') {
       const timer = setTimeout(() => {
         setCopySuccessMessage('')
-      }, 2000)
+        setShowHints(false)
+      }, 1000)
       return () => clearTimeout(timer)
     }
-  }, [copySuccessMessage, setCopySuccessMessage])
+  }, [copySuccessMessage, setCopySuccessMessage, setShowHints])
 
   return (
-    <Modal isOpen={isOpen} className="z-[9999999998] bg-orange-pastel">
+    <Modal isOpen={showHints} className="z-[9999999998] bg-orange-pastel">
       <div className="mt-24 px-16">
         <div className="flex pb-12">
           <div className="flex-1"></div>
@@ -113,6 +118,14 @@ export function CredentialsHints({ isOpen }: CardPinModalProps) {
               Tap below to copy
             </Footnote>
           </div>
+        </div>
+        <div className="mb-2 h-1 w-full bg-orange-pastel">
+          <div
+            className={clsx(
+              'h-1 bg-orange-light transition-all delay-100 duration-700 ease-out',
+              copySuccessMessage !== '' ? 'w-full' : 'w-0'
+            )}
+          ></div>
         </div>
         <div className="divide-y divide-black divide-opacity-[.08] border-y border-black border-opacity-[.08]">
           {credentials.map((credential) => (

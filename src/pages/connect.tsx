@@ -1,117 +1,68 @@
-import { ReactElement, useEffect, useState } from 'react'
+import { ReactElement, useEffect } from 'react'
 import clsx from 'clsx'
-import axios from 'axios'
 import { useRouter } from 'next/router'
-import { Button } from 'components/buttons'
+import { Button } from 'components/button'
 import { BadgeIcon } from 'components/icons'
-import { Heading, Paragraph, Subheading } from 'components/typography'
-import { ArgyleLink } from 'components/ArgyleLink'
+import { Heading, Paragraph } from 'components/typography'
+import { ArgyleLink } from 'components/argyle-link'
 import Fullscreen from 'layouts/fullscreen'
-import { getCookie, hasCookie, setCookie } from 'cookies-next'
-
-const encryptPDConfig = async (config: any) => {
-  const { data } = await axios.post<any>(`/api/encrypt-config`, config)
-  return data
-}
+import { useAtomValue } from 'jotai'
+import {
+  triggerPdAtom,
+  isPLLSelectedAtom,
+  selectedItemAtom,
+  selectedItemPdSupportedAtom,
+} from 'stores/global'
+import { useLink } from 'hooks/use-link'
 
 export default function ConnectPage() {
-  const [linkLoading, setLinkLoading] = useState(false)
-  const [linkInstance, setLinkInstance] = useState<any>()
-
-  const selectedLinkItem = getCookie('is-pll-selected')
-    ? getCookie('link-item-pd-supported')
-      ? getCookie('link-item')?.toString()
-      : null
-    : getCookie('link-item')?.toString() || null
-
-  const [linkItem, setLinkItem] = useState<any>(selectedLinkItem)
-
-  const pdConfig = getCookie('pd-config')
-
   const router = useRouter()
 
-  const handleLinkOpen = () => {
-    if (!linkInstance) {
-      return setLinkLoading(true)
-    }
+  const triggerPd = useAtomValue(triggerPdAtom)
+  const isPLLSelected = useAtomValue(isPLLSelectedAtom)
+  const selectedItem = useAtomValue(selectedItemAtom)
+  const selectedItemPdSupported = useAtomValue(selectedItemPdSupportedAtom)
 
-    linkInstance.open()
-  }
+  const { openLink, isLinkLoading, setLinkInstance, setIsLinkOpen } = useLink()
 
-  useEffect(() => {
-    const fetchConfig = async () => {
-      const { encrypted_config } = await encryptPDConfig({
-        bank_account: {
-          bank_name: 'GoodLoans',
-          routing_number: '084101234',
-          account_number: 9483746361234,
-          account_type: 'checking',
-        },
-        amount_allocation: {
-          value: '100',
-        },
-      })
+  const selectedLinkItem = isPLLSelected
+    ? selectedItemPdSupported
+      ? selectedItem
+      : null
+    : selectedItem || null
 
-      setCookie('pd-config', encrypted_config)
-    }
+  const onClose = () => {
+    setIsLinkOpen(false)
 
-    if (!hasCookie('pd-config')) {
-      fetchConfig()
-    }
-  }, [])
-
-  useEffect(() => {
-    if (linkInstance && linkLoading === true) {
-      setLinkLoading(false)
-      linkInstance.open()
-    }
-
-    if (getCookie('is-pd-open') && !linkLoading && linkInstance) {
-      linkInstance.open()
-    }
-  }, [linkLoading, linkInstance])
-
-  const handleLinkClose = () => {
-    if (getCookie('is-pd-open')) {
+    if (triggerPd) {
       router.push('/loan/pll/sign')
     } else {
       router.push('/loan/landing')
     }
   }
 
-  const demoAccounts = [
-    {
-      label: 'Full time, 3 jobs',
-      userId: '01824037-20b8-3f5e-48d8-fc923911d2cd',
-      userToken:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjbGllbnRfaWQiOiIwMTdmMDdmMi0xODU5LWFjN2UtMTA1NC1jN2JlOTAyOGVhMmUiLCJleHAiOjE2NjE1MjY3MzAsImlhdCI6MTY1ODkzNDczMCwiaXNzIjoiYXJneWxlLWNvcmUtYXV0aC1wcm9kIiwianRpIjoiZTRlMzI3ZDUtNTYxMS00MTllLWFjZjMtOGFlMzM5Zjc4N2RiIiwic3ViIjoiMDE4MjQwMzctMjBiOC0zZjVlLTQ4ZDgtZmM5MjM5MTFkMmNkIiwidXNlcl9pZCI6IjAxODI0MDM3LTIwYjgtM2Y1ZS00OGQ4LWZjOTIzOTExZDJjZCJ9.4j4ggH0CM9nlMTZXuW9DVWPGCCLOw5SSb4fGCk9PkCc',
-    },
-    {
-      label: 'Gig worker',
-      userId: '01824494-b528-9ec8-a698-ecfcbd2f7e8b',
-      userToken:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjbGllbnRfaWQiOiIwMTdmMDdmMi0xODU5LWFjN2UtMTA1NC1jN2JlOTAyOGVhMmUiLCJleHAiOjE2NjE1OTk5NzIsImlhdCI6MTY1OTAwNzk3MiwiaXNzIjoiYXJneWxlLWNvcmUtYXV0aC1wcm9kIiwianRpIjoiNWNmYmI0MjQtMTY3Ny00NTc1LWIyMzAtYTQ1ODk5ZDEwNTVkIiwic3ViIjoiMDE4MjQ0OTQtYjUyOC05ZWM4LWE2OTgtZWNmY2JkMmY3ZThiIiwidXNlcl9pZCI6IjAxODI0NDk0LWI1MjgtOWVjOC1hNjk4LWVjZmNiZDJmN2U4YiJ9.QBRE98IaI9SO_yJd6l59jVtj6lvJOUxQ8X99N44C9mM',
-    },
-  ]
+  useEffect(() => {
+    if (triggerPd) {
+      openLink()
+    }
+  }, [triggerPd, openLink])
 
-  const goToDemoAccount = (account: any) => {
-    setCookie('argyle-x-user-id', account.userId)
-    setCookie('argyle-x-user-token', account.userToken)
-
-    router.push('/')
-  }
+  useEffect(() => {
+    router.prefetch('/loan/pll/sign')
+    router.prefetch('/loan/landing')
+  }, [router])
 
   return (
     <>
       <ArgyleLink
-        onClose={() => handleLinkClose()}
+        customConfig={{
+          onClose: onClose,
+          linkItems: selectedLinkItem ? [selectedLinkItem] : [],
+          payDistributionUpdateFlow: isPLLSelected && triggerPd,
+        }}
         onLinkInit={(link) => {
           setLinkInstance(link)
         }}
-        linkItemId={linkItem}
-        payDistributionUpdateFlow={!!getCookie('is-pll-selected')}
-        pdConfig={pdConfig}
-        setLinkItem={setLinkItem}
       />
       <div className="flex h-full flex-col">
         <div className="mt-auto px-20">
@@ -124,31 +75,11 @@ export default function ConnectPage() {
             employment information
           </Paragraph>
           <div className="mt-auto pb-20">
-            <div className={clsx('flex', linkLoading && 'animate-pulse')}>
-              <Button onClick={handleLinkOpen}>Connect your work</Button>
+            <div className={clsx('flex', isLinkLoading && 'animate-pulse')}>
+              <Button onClick={openLink}>Continue</Button>
             </div>
           </div>
         </div>
-        {process.env.APP_ENVIRONMENT === 'development' && (
-          <div className="mt-8 bg-red-50 p-2 pb-8">
-            <div className="w-full px-4">
-              <Subheading className="mb-2 ml-8 -translate-y-8 -rotate-12 font-mono font-medium !text-red-600">
-                Development only
-              </Subheading>
-              <div className="grid grid-cols-2 gap-4">
-                {demoAccounts.map((account) => (
-                  <button
-                    key={account.userId}
-                    className="w-full rounded-md bg-red-400 p-4 font-semibold text-white"
-                    onClick={() => goToDemoAccount(account)}
-                  >
-                    {account.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </>
   )

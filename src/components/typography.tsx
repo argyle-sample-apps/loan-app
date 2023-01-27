@@ -5,19 +5,6 @@ type TypographyProps = {
   className?: string
 }
 
-export function Megatitle({ children, className }: TypographyProps) {
-  return (
-    <h1
-      className={clsx(
-        'text-6xl font-light tracking-[-.01em] text-gray-darkest',
-        className
-      )}
-    >
-      {children}
-    </h1>
-  )
-}
-
 /* title: ['40px', '46px'], */
 export function Title({ children, className }: TypographyProps) {
   return (

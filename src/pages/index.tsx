@@ -1,27 +1,31 @@
-import { ReactElement, useState, useEffect } from 'react'
-import { useRouter } from 'next/router'
+import { ReactElement } from 'react'
+import Link from 'next/link'
+import { useAtom } from 'jotai'
 import Fullscreen from 'layouts/fullscreen'
-import { setCookie } from 'cookies-next'
-import { Button } from 'components/buttons'
-import { AccountBalanceSmallIcon, LogoutIcon } from 'components/icons'
+import { Button } from 'components/button'
+import {
+  AccountBalanceSmallIcon,
+  LogoutIcon,
+  AutoFixIcon,
+} from 'components/icons'
 import { Heading, Paragraph, Footnote } from 'components/typography'
-import { Toggle } from 'components/Toggle'
-import { Divider } from 'components/Divider'
-import { useEphemeralStore } from 'stores/ephemeral'
+import { Switch } from 'components/switch'
+import { Divider } from 'components/divider'
+import {
+  isBankVerificationSelectedAtom,
+  isPLLSelectedAtom,
+  isAutofillSelectedAtom,
+} from 'stores/global'
 
 export default function Home() {
-  const router = useRouter()
-  const [isBankVerificationSelected, setIsBankVerificationSelected] =
-    useState<boolean>(false)
-  const [isPLLSelected, setIsPLLSelected] = useState<boolean>(false)
-
-  const setLinkScriptVisible = useEphemeralStore(
-    (state) => state.setLinkScriptVisible
+  const [isBankVerificationSelected, setIsBankVerificationSelected] = useAtom(
+    isBankVerificationSelectedAtom
   )
+  const [isPLLSelected, setIsPLLSelected] = useAtom(isPLLSelectedAtom)
 
-  useEffect(() => {
-    setLinkScriptVisible(true)
-  }, [setLinkScriptVisible])
+  const [isAutofillSelected, setIsAutofillSelected] = useAtom(
+    isAutofillSelectedAtom
+  )
 
   return (
     <div className="flex h-full flex-col pb-20">
@@ -41,12 +45,30 @@ export default function Home() {
               Include the bank verification flow after the credit score{' '}
             </Footnote>
           </div>
-          <Toggle
-            id="bank-verification"
+          <Switch
             checked={isBankVerificationSelected}
             onChange={() =>
               setIsBankVerificationSelected(!isBankVerificationSelected)
             }
+          />
+        </div>
+
+        <Divider className="my-20" />
+        <div className="grid grid-cols-toggle">
+          <div>
+            <AutoFixIcon />
+          </div>
+          <div className="mr-16">
+            <Paragraph className="mb-5 text-black">
+              Application autofill
+            </Paragraph>
+            <Footnote className="text-gray-pastel">
+              Include the autofill feature to streamline application data entry
+            </Footnote>
+          </div>
+          <Switch
+            checked={isAutofillSelected}
+            onChange={() => setIsAutofillSelected(!isAutofillSelected)}
           />
         </div>
         <Divider className="my-20" />
@@ -63,28 +85,19 @@ export default function Home() {
               lending (PLL)
             </Footnote>
           </div>
-          <Toggle
+          <Switch
             checked={isPLLSelected}
             onChange={() => setIsPLLSelected(!isPLLSelected)}
-            id="direct-deposit"
           />
         </div>
         <Divider className="my-20" />
       </div>
       <div className="mt-auto px-20">
-        <Button
-          green
-          onClick={() => {
-            setCookie('is-pll-selected', isPLLSelected)
-            setCookie(
-              'is-bank-verification-selected',
-              isBankVerificationSelected
-            )
-            router.push('/landing')
-          }}
-        >
-          Start demo
-        </Button>
+        <Link href="/landing" passHref>
+          <Button as="a" green>
+            Start demo
+          </Button>
+        </Link>
       </div>
     </div>
   )
