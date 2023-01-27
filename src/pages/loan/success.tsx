@@ -2,30 +2,21 @@ import { ReactElement } from 'react'
 import { Heading, Paragraph } from 'components/typography'
 import { formatCurrency } from 'utils/format'
 import Fullscreen from 'layouts/fullscreen'
-import { SuccessScreen } from 'views/SuccessScreen'
-import { getCookie } from 'cookies-next'
-import { clearCookies } from 'utils'
-import { useGlobalStore } from 'stores/global'
-import { useEphemeralStore } from 'stores/ephemeral'
+import { SuccessScreen } from 'views/success-screen'
+import { useAtomValue } from 'jotai'
+import { loanAmountAtom } from 'stores/global'
+import { useCleanup } from 'hooks/use-cleanup'
 
 export default function SuccessPage() {
-  const amount = getCookie('loan-amount')?.toString() || ''
-  const loanAmount = amount ? parseInt(amount) : 4000
-
-  const setUser = useGlobalStore((state) => state.setUser)
-
-  const setLinkScriptVisible = useEphemeralStore(
-    (state) => state.setLinkScriptVisible
-  )
+  const loanAmount = useAtomValue(loanAmountAtom)
+  const cleanup = useCleanup()
 
   return (
     <SuccessScreen
       route="/"
       button={'Done'}
       callback={() => {
-        clearCookies()
-        setLinkScriptVisible(false)
-        setUser('', '')
+        cleanup()
       }}
     >
       <Heading className="mb-16">Success</Heading>

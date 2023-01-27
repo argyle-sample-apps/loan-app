@@ -1,4 +1,3 @@
-import { deleteCookie } from 'cookies-next'
 import fallbackItems from '../fallback.json'
 
 export function capitalizeFirstLetter(word: string) {
@@ -36,17 +35,33 @@ export const getAuthOpts = (params?: AuthOpts) => {
   return options
 }
 
-export const clearCookies = () => {
-  const cookies = [
-    'argyle-x-user-token',
-    'argyle-x-user-id',
-    'link-item',
-    'is-pll-selected',
-    'is-pd-open',
-    'is-bank-verification-selected',
-    'loan-amount',
-    'link-item-pd-supported',
-    'pd-config',
-  ]
-  cookies.forEach((cookie) => deleteCookie(cookie))
+export type BasePay = {
+  amount: string
+  period: string
+  currency: string
+}
+
+export function toMonthlyPay(pay: BasePay) {
+  const { period, amount } = pay
+  const decimal = Number(amount)
+
+  if (period === 'hourly') {
+    return decimal * 20 * 8
+  }
+  if (period === 'weekly') {
+    return decimal * 4
+  }
+  if (period === 'biweekly') {
+    return decimal * 2
+  }
+  if (period === 'semimonthly') {
+    return decimal * 2
+  }
+  if (period === 'monthly') {
+    return decimal
+  }
+  if (period === 'annual') {
+    return decimal / 12
+  }
+  return decimal
 }

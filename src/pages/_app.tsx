@@ -1,22 +1,24 @@
-import { ReactElement, ReactNode, useState } from 'react'
+import { ReactElement, ReactNode } from 'react'
 import type { NextPage } from 'next'
 import type { AppProps } from 'next/app'
-import Router from 'next/router'
 import Head from 'next/head'
 import '../styles/globals.css'
 import { AnimatePresence, domAnimation, LazyMotion, m } from 'framer-motion'
 import { animation } from 'utils/animation'
 import { ThemeProvider } from '@material-tailwind/react'
+import { BASE_PATH } from 'consts'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { ErrorBoundary } from 'react-error-boundary'
-import { deleteCookie } from 'cookies-next'
-import { Button } from 'components/buttons'
+import { Button } from 'components/button'
 import { Subheading } from 'components/typography'
 import { useSetAtom } from 'jotai'
-import { RESET } from 'jotai/utils'
-import { sampleData } from 'stores/global'
 import axios from 'axios'
+import Script from 'next/script'
+import { linkScriptLoadedAtom } from 'stores/global'
+import { clearCookies } from 'hooks/use-cleanup'
+
+axios.defaults.baseURL = BASE_PATH
 
 type NextPageWithLayout = NextPage & {
   getLayout?: (page: ReactElement) => ReactNode
@@ -52,7 +54,8 @@ const queryClient = new QueryClient()
 
 function MyApp({ Component, pageProps, router }: AppPropsWithLayout) {
   const getLayout = Component.getLayout || ((page) => page)
-  const setSampleData = useSetAtom(sampleData)
+
+  const setIsLinkScriptLoaded = useSetAtom(linkScriptLoadedAtom)
 
   return getLayout(
     <>
@@ -61,42 +64,61 @@ function MyApp({ Component, pageProps, router }: AppPropsWithLayout) {
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <meta
           name="viewport"
-          content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"
+          content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5,user-scalable=yes"
         />
-        <meta name="description" content="Description" />
-        <meta name="keywords" content="Keywords" />
+        <meta property="title" content="Loan App" />
+        <meta
+          name="description"
+          content="Implement a modern loan application powered by income data."
+        />
         <title>Loan App</title>
 
-        <link rel="manifest" href={'/manifest.json'} />
+        <link rel="manifest" href={BASE_PATH + '/manifest.json'} />
+        <link
+          rel="apple-touch-icon"
+          sizes="180x180"
+          href={BASE_PATH + '/apple-touch-icon.png'}
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="32x32"
+          href={BASE_PATH + '/favicon-32x32.png'}
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="16x16"
+          href={BASE_PATH + '/favicon-16x16.png'}
+        />
+
         <link
           rel="preload"
-          href={
-            'https://res.cloudinary.com/argyle-media/raw/upload/v1638889204/fonts/CircularXXWeb-Light.woff2'
-          }
+          href={BASE_PATH + '/fonts/CircularXXWebLight.woff2'}
           as="font"
           type="font/woff2"
           crossOrigin="anonymous"
         />
         <link
           rel="preload"
-          href={
-            'https://res.cloudinary.com/argyle-media/raw/upload/v1612979770/fonts/CircularXXWeb-Medium.woff'
-          }
+          href={BASE_PATH + '/fonts/CircularXXWebMedium.woff2'}
           as="font"
           type="font/woff2"
           crossOrigin="anonymous"
         />
         <link
           rel="preload"
-          href={
-            'https://res.cloudinary.com/argyle-media/raw/upload/v1612979711/fonts/CircularXXWeb-Regular.woff2'
-          }
+          href={BASE_PATH + '/fonts/CircularXXWebRegular.woff2'}
           as="font"
           type="font/woff2"
           crossOrigin="anonymous"
         />
         <meta name="theme-color" content="#ffffff" />
       </Head>
+      <Script
+        src="https://plugin.argyle.com/argyle.web.v3.js"
+        onLoad={() => setIsLinkScriptLoaded(true)}
+      />
       <QueryClientProvider client={queryClient}>
         <LazyMotion features={domAnimation}>
           <AnimatePresence exitBeforeEnter={false}>
@@ -114,11 +136,7 @@ function MyApp({ Component, pageProps, router }: AppPropsWithLayout) {
               <ErrorBoundary
                 FallbackComponent={ErrorFallback}
                 onReset={async () => {
-                  deleteCookie('argyle-x-session')
-                  deleteCookie('argyle-x-user-id')
-                  deleteCookie('argyle-x-user-token')
-
-                  setSampleData(RESET)
+                  clearCookies()
                 }}
               >
                 <ThemeProvider value={customTheme}>

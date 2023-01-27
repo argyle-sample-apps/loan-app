@@ -1,12 +1,11 @@
 import { ReactElement } from 'react'
-import { useRouter } from 'next/router'
-import { Button } from 'components/buttons'
+import { Button } from 'components/button'
+import Link from 'next/link'
 import { BrandIcon, MonetizationIcon } from 'components/icons'
 import { Title, Subheading } from 'components/typography'
 import Fullscreen from 'layouts/fullscreen'
 
 export default function FirstPage() {
-  const router = useRouter()
   return (
     <div className="flex h-full flex-col bg-green-light pb-20">
       <div className="mb-auto ml-20 mt-60">
@@ -22,7 +21,9 @@ export default function FirstPage() {
           a big purchase, and more.
         </Subheading>
 
-        <Button onClick={() => router.push('/information')}>Next</Button>
+        <Link href="/information" passHref>
+          <Button as="a">Next</Button>
+        </Link>
       </div>
     </div>
   )

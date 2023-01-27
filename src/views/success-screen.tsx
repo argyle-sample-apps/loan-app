@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router'
-import { Button } from 'components/buttons'
+import { Button } from 'components/button'
 import { CheckCircleIcon } from 'components/icons'
 
 export const SuccessScreen = ({ route, button, children, callback }: any) => {
@@ -13,8 +13,13 @@ export const SuccessScreen = ({ route, button, children, callback }: any) => {
         {children}
         <Button
           onClick={() => {
-            callback && callback()
             router.push(route || '/')
+
+            if (callback) {
+              setTimeout(() => {
+                callback()
+              }, 1000)
+            }
           }}
         >
           {button || 'Done'}

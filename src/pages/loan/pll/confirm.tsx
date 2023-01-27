@@ -1,18 +1,18 @@
 import { ReactElement } from 'react'
-import { useRouter } from 'next/router'
-import { Button } from 'components/buttons'
+import { Button } from 'components/button'
 import WithBackButton from 'layouts/with-back-button'
+import Link from 'next/link'
 
 export default function ConfirmPage() {
-  const router = useRouter()
-
   return (
     <div className="flex h-full flex-col">
       <div className="mx-20">Pay distribution</div>
       <div className="mx-20">
-        <Button green onClick={() => router.push('/success')}>
-          Sign
-        </Button>
+        <Link href="/success" passHref>
+          <Button as="a" green>
+            Sign
+          </Button>
+        </Link>
       </div>
     </div>
   )

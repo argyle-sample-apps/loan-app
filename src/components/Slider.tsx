@@ -17,6 +17,7 @@ export const Slider = ({ min = 1, max, onChange, value }: SliderProps) => {
         step="1"
         onChange={onChange}
         value={value}
+        aria-label="slider"
         className="
       form-range
       h-[2px]

@@ -19,7 +19,11 @@ function WithBackButton({ children, warning }: WithBackButtonProps) {
       ref={ref}
     >
       <div className="px-24 pt-32 pb-16">
-        <button className="block h-12 w-[15px]" onClick={() => router.back()}>
+        <button
+          className="block h-12 w-[15px]"
+          onClick={() => router.back()}
+          aria-label="Back button"
+        >
           <LeftArrowIcon />
         </button>
       </div>

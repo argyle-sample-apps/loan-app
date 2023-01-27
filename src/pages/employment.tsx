@@ -1,31 +1,57 @@
-import { ReactElement, useState } from 'react'
-import { useRouter } from 'next/router'
-import { Button } from 'components/buttons'
 import clsx from 'clsx'
+import Link from 'next/link'
+import { ReactElement, useEffect, useState } from 'react'
+import { Button } from 'components/button'
 import { useCombobox } from 'downshift'
 import { useSearch } from 'hooks/use-search'
 import { Heading, Paragraph } from 'components/typography'
 import WithBackButton from 'layouts/with-back-button'
 import { useForm } from 'react-hook-form'
-import { useAtom } from 'jotai'
+import { useAtomValue, useSetAtom } from 'jotai'
 import { LinkItem } from 'models/link-item'
-import { selectedItemAtom } from 'atoms'
-import { deleteCookie, setCookie } from 'cookies-next'
+import { formatDateString, formatCurrency } from 'utils/format'
+import { ControlledInput } from 'components/controlled-input'
+import { capitalizeFirstLetter, toMonthlyPay } from 'utils'
+import {
+  selectedItemAtom,
+  selectedItemPdSupportedAtom,
+  userIdAtom,
+} from 'stores/global'
+import { useEmployment } from 'hooks/use-employment'
+import { usePayAllocation } from 'hooks/use-pay-allocation'
+import { lightFormat, parseISO } from 'date-fns'
+import { Employment } from 'models/employment'
+import { getCookie } from 'cookies-next'
 
-function capitalizeFirstLetter(word: string) {
-  if (!word || !word.length) {
-    return null
-  }
+const getStartDate = (employment: Employment) => {
+  const hireDate = employment?.hire_datetime
+  return hireDate ? lightFormat(parseISO(hireDate), 'dd/MM/yyyy') : ''
+}
 
-  return word.charAt(0).toUpperCase() + word.slice(1)
+const getNetIncome = (employment: Employment) => {
+  const basePay = employment?.base_pay
+  return basePay ? formatCurrency(toMonthlyPay(basePay)) : ''
 }
 
 export default function ThirdPage() {
-  const router = useRouter()
-
+  const userId = useAtomValue(userIdAtom) || getCookie('argyle-x-user-id')
   const [query, setQuery] = useState('')
-  const { results, isLoading } = useSearch(query)
-  const [_, setSelectedItem] = useAtom(selectedItemAtom)
+  const { data: results, isLoading } = useSearch(query)
+  const setSelectedItem = useSetAtom(selectedItemAtom)
+  const setSelectedItemPdSupported = useSetAtom(selectedItemPdSupportedAtom)
+
+  const { data: employment } = useEmployment(!!userId)
+  const { data: allocation } = usePayAllocation(!!userId)
+
+  const values =
+    employment && allocation
+      ? {
+          startDate: getStartDate(employment),
+          netIncome: getNetIncome(employment),
+          accountNumber: allocation.bank_account.account_number,
+          routingNumber: allocation.bank_account.routing_number,
+        }
+      : {}
 
   const {
     isOpen,
@@ -35,6 +61,7 @@ export default function ThirdPage() {
     getComboboxProps,
     highlightedIndex,
     getItemProps,
+    selectItem,
   } = useCombobox({
     items: results || [],
     onInputValueChange: ({ inputValue }) => {
@@ -44,34 +71,27 @@ export default function ThirdPage() {
       return item ? String(item.name) : ''
     },
     onSelectedItemChange: ({ selectedItem }) => {
-      if (!selectedItem) {
+      if (!selectedItem || !selectedItem.is_supported) {
         return
       }
 
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      setSelectedItem(selectedItem)
+      setSelectedItem(selectedItem.id)
 
-      if (selectedItem.is_supported) {
-        setCookie('link-item', selectedItem.id)
-        if (selectedItem?.features?.pay_distribution_update?.supported) {
-          setCookie('link-item-pd-supported', true)
-        }
-      } else {
-        deleteCookie('link-item')
+      if (selectedItem?.features?.pay_distribution_update?.supported) {
+        setSelectedItemPdSupported(true)
       }
     },
   })
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm()
+  useEffect(() => {
+    if (employment) {
+      selectItem(employment.linkItem)
+    }
+  }, [employment, selectItem])
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  const onSubmit = (data) => {}
+  const { register, control } = useForm<any>({
+    values,
+  })
 
   return (
     <div className="flex h-full flex-col ">
@@ -80,7 +100,7 @@ export default function ThirdPage() {
         <Paragraph className="text-gray-T50">
           Your current employment, income, and work history.
         </Paragraph>
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form>
           <div {...getComboboxProps()}>
             {isOpen ? (
               <label
@@ -128,38 +148,65 @@ export default function ThirdPage() {
                 </div>
               ))}
           </ul>
-          <input
-            className="form-input"
+
+          <ControlledInput
+            transform={{
+              input: (value) => (value === '' ? '' : value.toString()),
+              output: (e) => {
+                const output = formatDateString(e.target.value)
+                return output
+              },
+            }}
+            control={control}
             placeholder="Start date (MM/DD/YYYY)"
+            name="startDate"
+            aria-label="Start date"
             {...register('startDate')}
+            ref={null}
           />
-          <input
-            className="form-input"
-            placeholder="Monthly net income (USD)"
+          <ControlledInput
+            transform={{
+              input: (value) => (value === '$0' || '' ? '' : value.toString()),
+              output: (e) => {
+                const output = formatCurrency(e.target.value)
+                return output
+              },
+            }}
+            control={control}
+            placeholder="Monthly net income ($USD)"
+            name="netIncome"
+            aria-label="Monthly net income"
             {...register('netIncome')}
+            ref={null}
           />
         </form>
         <Heading className="mb-8 mt-16">Banking</Heading>
         <Paragraph className="mb-16 text-gray-T50">
           Which bank account the loan will be paid out to.
         </Paragraph>
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form>
           <input
             className="form-input"
             placeholder="Account number"
+            aria-label="Account number"
+            type="number"
             {...register('accountNumber')}
           />
           <input
             className="form-input"
             placeholder="Routing number"
+            aria-label="Routing number"
+            type="number"
             {...register('routingNumber')}
           />
         </form>
       </div>
       <div className="mx-20 mt-auto">
-        <Button green onClick={() => router.push('/credit/landing')}>
-          Next
-        </Button>
+        <Link href="/credit/landing" passHref>
+          <Button as="a" green>
+            Next
+          </Button>
+        </Link>
       </div>
     </div>
   )

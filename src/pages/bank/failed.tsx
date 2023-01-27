@@ -1,12 +1,31 @@
-import { ReactElement } from 'react'
-import { useRouter } from 'next/router'
-import { Button } from 'components/buttons'
+import Link from 'next/link'
+import { ReactElement, useCallback, useEffect } from 'react'
+import { Button } from 'components/button'
 import { CancelIcon } from 'components/icons'
 import { Heading, Paragraph } from 'components/typography'
 import WithBackButton from 'layouts/with-back-button'
+import { getCookie } from 'cookies-next'
+import { useRouter } from 'next/router'
+import { useAtomValue } from 'jotai'
+import { isPLLSelectedAtom } from 'stores/global'
 
 export default function NinthPage() {
   const router = useRouter()
+  const userId = getCookie('argyle-x-user-id') as string
+  const isPLLSelected = useAtomValue(isPLLSelectedAtom)
+
+  const getNextRoute = useCallback(() => {
+    if (userId && !isPLLSelected) {
+      return '/loan/landing'
+    }
+
+    return '/connect'
+  }, [userId, isPLLSelected])
+
+  useEffect(() => {
+    router.prefetch(getNextRoute())
+  }, [router, getNextRoute])
+
   return (
     <div className="flex h-full flex-col">
       <div className="mt-auto px-20">
@@ -22,9 +41,9 @@ export default function NinthPage() {
           employment.
         </Paragraph>
         <div className="mt-auto">
-          <Button onClick={() => router.push('/connect')}>
-            Connect your work
-          </Button>
+          <Link href={getNextRoute()} passHref>
+            <Button as="a">Continue</Button>
+          </Link>
         </div>
       </div>
     </div>

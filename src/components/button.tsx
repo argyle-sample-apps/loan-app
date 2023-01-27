@@ -31,7 +31,7 @@ export const Button = forwardRef(
         href={href}
         onClick={disabled ? () => {} : onClick}
         ref={ref}
-        className={clsx('mt-20 block w-full py-3 px-6 text-xl', {
+        className={clsx('mt-20 block w-full py-3 px-6 text-center text-xl', {
           'opacity-30': disabled,
           'bg-green text-white': green,
           'bg-gray-T08 text-black': gray,

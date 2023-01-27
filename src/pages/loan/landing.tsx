@@ -1,19 +1,26 @@
-import { ReactElement, useState } from 'react'
+import { ReactElement, useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
-import { Button } from 'components/buttons'
+import { Button } from 'components/button'
 import { Heading, Paragraph } from 'components/typography'
 import { StarsIcon } from 'components/icons'
 import { formatCurrency } from 'utils/format'
 import Fullscreen from 'layouts/fullscreen'
+import { Slider } from 'components/slider'
+import { useAtomValue, useSetAtom } from 'jotai'
+import { triggerPdAtom, isPLLSelectedAtom, loanAmountAtom } from 'stores/global'
 
-import { Slider } from 'components/Slider'
-import { getCookie, setCookie } from 'cookies-next'
 export default function EleventhPage() {
   const router = useRouter()
   const loanAmount = 4000
-  const [adjustedLoanAmount, setAdjustedLoanAmount] = useState<string | number>(
-    loanAmount
-  )
+  const [adjustedLoanAmount, setAdjustedLoanAmount] =
+    useState<number>(loanAmount)
+  const setLoanAmount = useSetAtom(loanAmountAtom)
+  const isPLLSelected = useAtomValue(isPLLSelectedAtom)
+  const setTriggerPd = useSetAtom(triggerPdAtom)
+
+  useEffect(() => {
+    router.prefetch(isPLLSelected ? '/connect' : '/loan/sign')
+  }, [router, isPLLSelected])
 
   return (
     <div className="flex h-full flex-col bg-yellow-light pb-20">
@@ -27,7 +34,9 @@ export default function EleventhPage() {
           {formatCurrency(loanAmount)} with 3% interest.
         </Paragraph>
         <Slider
-          onChange={(event) => setAdjustedLoanAmount(event.target.value)}
+          onChange={(event) =>
+            setAdjustedLoanAmount(Number(event.target.value))
+          }
           max={loanAmount}
           value={adjustedLoanAmount}
         />
@@ -36,10 +45,12 @@ export default function EleventhPage() {
           {formatCurrency(adjustedLoanAmount)}
         </Heading>
         <Button
-          onClick={async () => {
-            setCookie('loan-amount', `${adjustedLoanAmount}`)
-            if (getCookie('is-pll-selected')) {
-              await setCookie('is-pd-open', true)
+          onClick={() => {
+            setLoanAmount(adjustedLoanAmount)
+
+            if (isPLLSelected) {
+              setTriggerPd(true)
+
               router.push('/connect')
             } else {
               router.push('/loan/sign')

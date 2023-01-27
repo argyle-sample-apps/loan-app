@@ -1,3 +1,4 @@
+import React from 'react'
 import { addMonths, format } from 'date-fns'
 import {
   Heading,
@@ -6,7 +7,7 @@ import {
   Subparagraph,
   Footnote,
 } from 'components/typography'
-import { Divider } from 'components/Divider'
+import { Divider } from 'components/divider'
 import { formatCurrency, formatPercent } from 'utils/format'
 
 export const SignScreen = ({ loanAmount }) => {
@@ -63,8 +64,8 @@ export const SignScreen = ({ loanAmount }) => {
         Federal truth-in lending disclosure statement
       </Subheading>
 
-      {paymentData.map(({ title, description, value }) => (
-        <>
+      {paymentData.map(({ title, description, value }, i) => (
+        <React.Fragment key={i}>
           <Divider />
           <div className="grid grid-cols-rates gap-20">
             <div>
@@ -75,7 +76,7 @@ export const SignScreen = ({ loanAmount }) => {
             </div>
             <Footnote className="pt-14 text-right text-black">{value}</Footnote>
           </div>
-        </>
+        </React.Fragment>
       ))}
       <Divider className="mb-60" />
 
@@ -88,15 +89,15 @@ export const SignScreen = ({ loanAmount }) => {
         </Footnote>
       </div>
       <Divider />
-      {paymentSchedule.map(({ payments, amount, due }) => (
-        <>
+      {paymentSchedule.map(({ payments, amount, due }, i) => (
+        <React.Fragment key={i}>
           <div className="my-12 grid grid-cols-schedule gap-16">
             <Footnote className="text-black">{payments}</Footnote>
             <Footnote className="text-black">{amount}</Footnote>
             <Footnote className=" text-black">{due}</Footnote>
           </div>
           <Divider />
-        </>
+        </React.Fragment>
       ))}
 
       <Subheading className="mb-16 mt-60 text-black">Terms</Subheading>
