@@ -9,8 +9,7 @@
     "ts:watch": "npm run ts --watch",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "prepare": "husky install"
+    "lint": "next lint"
   },
   "dependencies": {
     "@headlessui/react": "^1.5.0",
@@ -30,7 +29,6 @@
     "eslint-config-prettier": "^8.5.0",
     "framer-motion": "^6.2.8",
     "fuse.js": "^6.6.2",
-    "husky": "^8.0.1",
     "jotai": "^1.13.1",
     "next": "^12.2.3",
     "react": "^18.2.0",
